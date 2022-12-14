@@ -1,43 +1,43 @@
 #!/usr/bin/python3
+"""Given an Employee ID, returns information
+about his/her TODO list progress.
 """
-This python script returns information about his/her to do list progress.
-using https://jsonplaceholder.typicode.com/ as a REST API
-    parameters: employee ID (int)
-"""
-
 import requests
 from sys import argv
 
-
 if __name__ == '__main__':
-
     try:
-        employee_id = int(argv[1])
+        emp_id = int(argv[1])
     except ValueError:
         exit()
 
     api_url = 'https://jsonplaceholder.typicode.com'
-    user_url = '{}/users/{}'.format(api_url, employee_id)
-    tasks_url = '{}/todos'.format(user_url)
-    
-    name_response = requests.get(user_url).json()
+    user_uri = '{api}/users/{id}'.format(api=api_url, id=emp_id)
+    todo_uri = '{user_uri}/todos'.format(user_uri=user_uri)
 
-    employee_name = name_response.get('name')
+    # User Response
+    res = requests.get(user_uri).json()
 
-    task_response = requests.get(tasks_url).json()
+    # Name of the employee
+    name = res.get('name')
 
-    total_tasks = len(task_response)
+    # User TODO Response
+    res = requests.get(todo_uri).json()
 
-    non_competed = sum([elem['completed'] is False for elem in task_response])
+    # Total number of tasks, the sum of completed and non-completed tasks
+    total = len(res)
 
-    task_completed = total_tasks - non_competed
+    # Number of non-completed tasks
+    non_completed = sum([elem['completed'] is False for elem in res])
 
-    output = 'Employee {} is done with tasks({}/{}):'.format(employee_name,
-                                                            task_completed,
-                                                            total_tasks)
-    print(output)
+    # Number of completed tasks
+    completed = total - non_completed
 
-    for task in task_response:
-        if task.get('completed') is True:
-            print('\t', task.get('title'))
+    # Formatting the expected output
+    str = "Employee {emp_name} is done with tasks({completed}/{total}):"
+    print(str.format(emp_name=name, completed=completed, total=total))
 
+    # Printing completed tasks
+    for elem in res:
+        if elem.get('completed') is True:
+            print('\t', elem.get('title'))
