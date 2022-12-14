@@ -1,43 +1,40 @@
 #!/usr/bin/python3
-"""Export data from an API to CSV format.
+"""
+This module start the conecction with API jsonplace
 """
 import csv
 import requests
 from sys import argv
 
+
+def gather():
+    """
+    This methos return all task of user
+    """
+
+    url_all = "https://jsonplaceholder.typicode.com/todos?"
+    url_user = "https://jsonplaceholder.typicode.com/users?"
+    argv_all = {'userId': argv[1]}
+    argv_user = {'id': argv[1]}
+
+    response_all = requests.get(url_all, params=argv_all)
+    response_user = requests.get(url_user, params=argv_user)
+
+    all_json = response_all.json()
+    user_json = response_user.json()
+
+    name = user_json[0]['username']
+    id = user_json[0]['id']
+    list_date = []
+
+    for date in all_json:
+        info = [str(id), name, str(date['completed']), date['title']]
+        list_date.append(info)
+
+    with open('{}.csv'.format(argv[1]), 'w', encoding='UTF8') as file:
+        writer = csv.writer(file, quoting=csv.QUOTE_NONNUMERIC)
+        writer.writerows(list_date)
+
+
 if __name__ == '__main__':
-    # Checks if the argument can be converted to a number
-    try:
-        emp_id = int(argv[1])
-    except ValueError:
-        exit()
-
-    # Main formatted names to API uris and filenames
-    api_url = 'https://jsonplaceholder.typicode.com'
-    user_uri = '{api}/users/{id}'.format(api=api_url, id=emp_id)
-    todo_uri = '{user_uri}/todos'.format(user_uri=user_uri)
-    filename = '{emp_id}.csv'.format(emp_id=emp_id)
-
-    # User Response
-    res = requests.get(user_uri).json()
-
-    # Username of the employee
-    username = res.get('username')
-
-    # User TODO Response
-    res = requests.get(todo_uri).json()
-
-    # Create the new file for the user to save the information
-    # Filename example: `{user_id}.csv`
-    with open(filename, 'w', encoding='utf-8') as csvfile:
-        writer = csv.writer(csvfile, delimiter=',', quoting=csv.QUOTE_ALL)
-
-        for elem in res:
-            # Completed or non-completed task
-            status = elem.get('completed')
-
-            # The task name
-            title = elem.get('title')
-
-            # Writing each result of API response in a row of a CSV file
-            writer.writerow([emp_id, username, status, title])
+    gather()
