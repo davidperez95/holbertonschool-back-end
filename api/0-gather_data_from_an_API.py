@@ -1,43 +1,40 @@
 #!/usr/bin/python3
-"""Given an Employee ID, returns information
-about his/her TODO list progress.
+"""
+This module start the conecction with API jsonplace
 """
 import requests
 from sys import argv
 
+
+def gather():
+    """
+    This methos return the tasks of the users
+    """
+
+    url_all = "https://jsonplaceholder.typicode.com/todos?"
+    url_user = "https://jsonplaceholder.typicode.com/users?"
+    argv_all = {'userId': argv[1]}
+    argv_user = {'id': argv[1]}
+
+    response_all = requests.get(url_all, params=argv_all)
+    response_user = requests.get(url_user, params=argv_user)
+
+    all_json = response_all.json()
+    user_json = response_user.json()
+    comp, task = 0, 0
+    list_task = []
+
+    for dates in all_json:
+        task += 1
+        if dates['completed']:
+            comp += 1
+            list_task.append(dates['title'])
+
+    name = user_json[0]['name']
+    print("Employee {} is done with tasks({}/{}):".format(name, comp, task))
+    for task in list_task:
+        print("\t " + task)
+
+
 if __name__ == '__main__':
-    try:
-        emp_id = int(argv[1])
-    except ValueError:
-        exit()
-
-    api_url = 'https://jsonplaceholder.typicode.com'
-    user_uri = '{api}/users/{id}'.format(api=api_url, id=emp_id)
-    todo_uri = '{user_uri}/todos'.format(user_uri=user_uri)
-
-    # User Response
-    res = requests.get(user_uri).json()
-
-    # Name of the employee
-    name = res.get('name')
-
-    # User TODO Response
-    res = requests.get(todo_uri).json()
-
-    # Total number of tasks, the sum of completed and non-completed tasks
-    total = len(res)
-
-    # Number of non-completed tasks
-    non_completed = sum([elem['completed'] is False for elem in res])
-
-    # Number of completed tasks
-    completed = total - non_completed
-
-    # Formatting the expected output
-    str = "Employee {emp_name} is done with tasks({completed}/{total}):"
-    print(str.format(emp_name=name, completed=completed, total=total))
-
-    # Printing completed tasks
-    for elem in res:
-        if elem.get('completed') is True:
-            print('\t', elem.get('title'))
+    gather()
